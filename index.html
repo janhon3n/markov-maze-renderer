@@ -12,9 +12,10 @@
    <script src="client.js"></script>
 </head>
 
-<body style='margin:0px;padding:0px;' onload=init()>
-   <div style='background-color:rgb(116, 129, 136);width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;'>
-      <canvas style="background-color:#EEE;border:2px solid black;" width='1000px' height='600px' id='render-canvas'>Loading renderer...</canvas>
+<body style='margin:50px;padding:0px;background-color:rgb(116, 129, 136);' onload=init()>
+   <div style='display:flex;justify-content:center;align-items:stretch;flex-direction:column;'>
+      <canvas style="height:70vh;background-color:#EEE;border:2px solid black;" width='auto' height='auto' id='render-canvas'>Loading renderer...</canvas>
+      <div id="console" style="width:100%;margin:20px;">Loading...</div>
    </div>
 </body>
 

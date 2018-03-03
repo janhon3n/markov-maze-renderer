@@ -1,14 +1,19 @@
 function StageRenderer(elementID) {
+    this.stage = null
     this.renderStage = new createjs.Stage(elementID)
+    this.renderStage.canvas.width = document.getElementById(elementID).offsetWidth
+    this.renderStage.canvas.height = document.getElementById(elementID).offsetHeight
     var testShape = new createjs.Shape()
     testShape.graphics.beginFill('black').drawCircle(20, 20, 20)
     this.renderStage.addChild()
 
     this.stageContainer = new createjs.Container()
     this.stateContainer = new createjs.Container()
+    this.markerContainer = new createjs.Container()
 
     this.renderStage.addChild(this.stageContainer)
     this.renderStage.addChild(this.stateContainer)
+    this.renderStage.addChild(this.markerContainer)
 
     var canvasWidth = () => {
         return this.renderStage.canvas.width
@@ -24,6 +29,8 @@ function StageRenderer(elementID) {
     }
     var playerColors = ['red', 'green', 'blue']
 
+    this.resize = () => {
+    }
 
     this.clearState = () => {
         this.stateContainer.removeAllChildren()
@@ -31,6 +38,9 @@ function StageRenderer(elementID) {
     this.clearStage = () => {
         this.clearState()
         this.stageContainer.removeAllChildren()
+    }
+    this.clearMarkers = () => {
+        this.markerContainer.removeAllChildren()
     }
     this.drawStage = () => {
         this.drawGrid()
@@ -97,6 +107,23 @@ function StageRenderer(elementID) {
         this.stateContainer.addChild(coin)
     }
 
+    this.drawMarker = (row, col, playerNumber) => {
+        let marker = new createjs.Shape()
+        let rectSize = Math.min(boxWidth() * (1/3), boxHeight() * (1/3))
+        marker.graphics
+            .beginFill(playerColors[playerNumber])
+            .beginStroke('black')
+            .drawRect(
+                col * boxWidth() +
+                    (boxWidth() / 2) -
+                    (rectSize / 2),
+                row * boxHeight() +
+                (boxHeight() / 2) -
+                (rectSize / 2),
+                rectSize, rectSize)
+        this.markerContainer.addChild(marker)
+    }
+
     this.setStage = (stage) => {
         this.clearStage()
         this.stage = stage
@@ -107,10 +134,20 @@ function StageRenderer(elementID) {
         this.clearState()
         this.drawState(state)
     }
+    
+    this.updateMarkers = (searchMarkers, playerIndex) => {
+        if (this.stage === null) return
+        this.clearMarkers()
+        searchMarkers.forEach((marker) => {
+            this.drawMarker(marker.row, marker.col, playerIndex)
+        })
+        this.renderStage.update()
+    }
 }
 
 function init() {
     var renderer = new StageRenderer('render-canvas')
+    var consoleElement = document.getElementById('console')
 
     var socket = io('http://localhost:3010')
     socket.on('setStage', (stage) => {
@@ -120,5 +157,12 @@ function init() {
     socket.on('updateState', (state) => {
         renderer.updateState(state)
         console.log(state)
+    })
+    socket.on('updateSearchMarkers', (data) => {
+        renderer.updateMarkers(data.markers, data.playerIndex)
+        console.log(data)
+    })
+    socket.on('consoleMessage', (message) => {
+        consoleElement.innerText = message + '\n' + consoleElement.innerText
     })
 }
